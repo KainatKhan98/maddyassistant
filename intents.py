@@ -43,6 +43,72 @@ def detect_intent(command):
 
     command = normalize_text(command)
 
+# ==========================================
+# CONVERSATION COMMANDS
+# ==========================================
+
+    if any(
+    phrase in command
+    for phrase in [
+        "hello",
+        "hi",
+        "hey"
+        ]
+    ):
+
+        return {
+        "intent": "GREETING",
+        "target": None,
+        "query": None
+     }
+
+
+    if any(
+        phrase in command
+        for phrase in [
+        "how are you",
+        "how are you doing"
+        ]
+    ):
+
+        return {
+        "intent": "HOW_ARE_YOU",
+        "target": None,
+        "query": None
+        }
+
+
+    if any(
+        phrase in command
+    for phrase in [
+        "thank you",
+        "thanks",
+        "thank maddy"
+        ]
+    ):
+
+        return {
+        "intent": "THANKS",
+        "target": None,
+        "query": None
+        }
+
+
+    if any(
+        phrase in command
+    for phrase in [
+        "what can you do",
+        "what can you do for me",
+        "what are your capabilities"
+        ]
+    ):
+
+     return {
+        "intent": "CAPABILITIES",
+        "target": None,
+        "query": None
+        }
+
     # ==========================================
     # EXIT
     # ==========================================
