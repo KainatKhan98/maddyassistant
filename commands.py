@@ -1,234 +1,184 @@
 # ==========================================
-# MADDY V2 - COMMAND PROCESSOR
+# MADDY V3 - COMMAND HANDLER
 # ==========================================
 
+from intents import detect_intent
 from actions import *
 from voice import speak
 
 
-def clean_command(command):
-    command = command.lower().strip()
-
-    # Remove wake words
-    command = command.replace("hey maddy", "")
-    command = command.replace("hello maddy", "")
-    command = command.replace("maddy", "")
-
-    # Remove filler words
-    filler_words = [
-        "hello",
-        "hi",
-        "hey",
-        "please",
-        "can you",
-        "could you",
-        "would you",
-        "will you",
-        "for me"
-    ]
-
-    for word in filler_words:
-        command = command.replace(word, "")
-
-    # Remove extra spaces
-    command = " ".join(command.split())
-
-    return command
-
-
 def process_command(command):
 
-    # CLEAN THE COMMAND FIRST
-    command = clean_command(command)
+    result = detect_intent(command)
 
-    print(f"Command: {command}")
+    intent = result["intent"]
+    target = result["target"]
+    query = result["query"]
 
-    # ==========================================
-    # OPEN APPLICATIONS
-    # ==========================================
-
-    if "open chrome" in command or "launch chrome" in command:
-        open_chrome()
-
-    elif (
-        "open vscode" in command
-        or "open visual studio code" in command
-        or "launch vscode" in command
-    ):
-        open_vscode()
-
-    elif "open notepad" in command or "launch notepad" in command:
-        open_notepad()
-
-    elif "open calculator" in command or "launch calculator" in command:
-        open_calculator()
+    print(f"Intent: {intent}")
+    print(f"Target: {target}")
+    print(f"Query: {query}")
 
     # ==========================================
-    # WEBSITES
+    # OPEN APPLICATION
     # ==========================================
 
-    elif "open google" in command:
-        open_google()
+    if intent == "OPEN_APP":
 
-    elif "open youtube" in command:
-        open_youtube()
+        if target == "chrome":
+            open_chrome()
+
+        elif target == "vscode":
+            open_vscode()
+
+        elif target == "notepad":
+            open_notepad()
+
+        elif target == "calculator":
+            open_calculator()
 
     # ==========================================
-    # SEARCH
+    # WEBSITE
     # ==========================================
 
-    elif command.startswith("search google for"):
-        query = command.replace(
-            "search google for", "", 1
-        ).strip()
+    elif intent == "OPEN_WEBSITE":
 
-        if query:
-            google_search(query)
-        else:
-            speak("What should I search for?")
+        if target == "youtube":
+            open_youtube()
 
-    elif command.startswith("search youtube for"):
-        query = command.replace(
-            "search youtube for", "", 1
-        ).strip()
+        elif target == "google":
+            open_google()
 
-        if query:
-            youtube_search(query)
-        else:
-            speak("What should I search for?")
+    # ==========================================
+    # GOOGLE SEARCH
+    # ==========================================
+
+    elif intent == "GOOGLE_SEARCH":
+
+        google_search(query)
+
+    # ==========================================
+    # YOUTUBE SEARCH
+    # ==========================================
+
+    elif intent == "YOUTUBE_SEARCH":
+
+        youtube_search(query)
 
     # ==========================================
     # FOLDERS
     # ==========================================
 
-    elif "open downloads" in command:
-        open_downloads()
+    elif intent == "OPEN_FOLDER":
 
-    elif "open documents" in command:
-        open_documents()
+        if target == "downloads":
+            open_downloads()
 
-    elif "open desktop" in command:
-        open_desktop()
+        elif target == "documents":
+            open_documents()
+
+        elif target == "desktop":
+            open_desktop()
 
     # ==========================================
-    # TIME / DATE
+    # TIME
     # ==========================================
 
-    elif (
-        "what time is it" in command
-        or command == "time"
-        or "tell me the time" in command
-    ):
+    elif intent == "TIME":
         tell_time()
 
-    elif (
-        "what is the date" in command
-        or "what's the date" in command
-        or "today's date" in command
-        or "tell me the date" in command
-    ):
+    # ==========================================
+    # DATE
+    # ==========================================
+
+    elif intent == "DATE":
         tell_date()
 
     # ==========================================
     # SCREENSHOT
     # ==========================================
 
-    elif "take a screenshot" in command:
+    elif intent == "SCREENSHOT":
         take_screenshot()
-
-    elif command == "screenshot":
-        take_screenshot()
-
-    # ==========================================
-    # TYPING
-    # ==========================================
-
-    elif command.startswith("type "):
-
-        text = command.replace(
-            "type ", "", 1
-        ).strip()
-
-        if text:
-            type_text(text)
 
     # ==========================================
     # VOLUME
     # ==========================================
 
-    elif (
-        "increase volume" in command
-        or "volume up" in command
-        or "turn up volume" in command
-    ):
+    elif intent == "VOLUME_UP":
         increase_volume()
 
-    elif (
-        "decrease volume" in command
-        or "volume down" in command
-        or "turn down volume" in command
-    ):
+    elif intent == "VOLUME_DOWN":
         decrease_volume()
 
-    elif "mute" in command:
+    elif intent == "MUTE":
         mute_volume()
 
     # ==========================================
-    # WINDOW CONTROL
+    # WINDOW
     # ==========================================
 
-    elif "minimize" in command:
+    elif intent == "MINIMIZE":
         minimize_window()
 
-    elif "maximize" in command:
+    elif intent == "MAXIMIZE":
         maximize_window()
 
     # ==========================================
     # CHROME
     # ==========================================
 
-    elif "close chrome" in command:
+    elif intent == "CLOSE_CHROME":
         close_chrome()
 
     # ==========================================
-    # COMPUTER CONTROL
+    # SYSTEM
     # ==========================================
 
-    elif (
-        "lock computer" in command
-        or "lock my computer" in command
-    ):
+    elif intent == "LOCK":
         lock_computer()
 
-    elif (
-        "restart computer" in command
-        or "restart my computer" in command
-    ):
+    elif intent == "RESTART":
+
+        speak(
+            "Restarting your computer in ten seconds."
+        )
+
         restart_computer()
 
-    elif "cancel shutdown" in command:
+    elif intent == "CANCEL_SHUTDOWN":
         cancel_shutdown()
+
+    # ==========================================
+    # TYPE
+    # ==========================================
+
+    elif intent == "TYPE":
+
+        if query:
+            type_text(query)
 
     # ==========================================
     # EXIT
     # ==========================================
 
-    elif command in [
-        "exit",
-        "quit",
-        "stop",
-        "goodbye",
-        "shutdown maddy"
-    ]:
+    elif intent == "EXIT":
+
         speak("Goodbye.")
         return False
 
     # ==========================================
-    # UNKNOWN COMMAND
+    # UNKNOWN
     # ==========================================
 
     else:
-        speak("I don't know that command yet.")
-        print(f"Unknown command: {command}")
+
+        speak(
+            "I'm not sure what you want me to do."
+        )
+
+        print(
+            f"Unknown command: {query}"
+        )
 
     return True

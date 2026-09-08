@@ -1,24 +1,20 @@
 # ==========================================
-# MADDY V2
+# MADDY V3
 # ==========================================
 
 from voice import listen, speak
 from commands import process_command
 
 
-# ==========================================
-# MAIN
-# ==========================================
-
 def main():
 
-    print("=" * 50)
-    print("             MADDY V2")
-    print("       Voice Computer Assistant")
-    print("=" * 50)
+    print("=" * 60)
+    print("                    MADDY V3")
+    print("              Voice Computer Assistant")
+    print("=" * 60)
 
     speak(
-        "Hello. Maddy is ready."
+        "Hello. I am Maddy. How can I help you?"
     )
 
     while True:
@@ -28,22 +24,14 @@ def main():
         if not command:
             continue
 
-        print(
-            f"\nHeard: {command}"
-        )
+        print(f"\nHeard: {command}")
 
-        # ----------------------------------
-        # CHECK WAKE WORD
-        # ----------------------------------
+        # Check whether Maddy was called
+        if "maddy" in command.lower():
 
-        if "maddy" in command:
-
-            should_continue = process_command(
-                command
-            )
+            should_continue = process_command(command)
 
             if not should_continue:
-
                 break
 
         else:
@@ -53,10 +41,5 @@ def main():
             )
 
 
-# ==========================================
-# START
-# ==========================================
-
 if __name__ == "__main__":
-
     main()
