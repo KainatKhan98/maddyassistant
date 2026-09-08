@@ -4,6 +4,7 @@
 
 from intents import detect_intent
 from actions import *
+from app_manager import open_app, close_app
 from voice import speak
 
 
@@ -25,17 +26,7 @@ def process_command(command):
 
     if intent == "OPEN_APP":
 
-        if target == "chrome":
-            open_chrome()
-
-        elif target == "vscode":
-            open_vscode()
-
-        elif target == "notepad":
-            open_notepad()
-
-        elif target == "calculator":
-            open_calculator()
+        open_app(target)
 
     # ==========================================
     # WEBSITE
@@ -118,7 +109,7 @@ def process_command(command):
     # WINDOW
     # ==========================================
 
-    elif intent == "MINIMIZE":
+    elif intent == "MINIMIZE"  | intent == "MINIMISE":
         minimize_window()
 
     elif intent == "MAXIMIZE":
@@ -128,8 +119,9 @@ def process_command(command):
     # CHROME
     # ==========================================
 
-    elif intent == "CLOSE_CHROME":
-        close_chrome()
+    elif intent == "CLOSE_APP":
+
+        close_app(target)
 
     # ==========================================
     # SYSTEM

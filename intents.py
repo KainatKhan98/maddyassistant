@@ -335,19 +335,21 @@ def detect_intent(command):
     # CLOSE CHROME
     # ==========================================
 
-    if any(
-        phrase in command
-        for phrase in [
-            "close chrome",
-            "close google chrome",
-            "exit chrome"
-        ]
-    ):
-        return {
-            "intent": "CLOSE_CHROME",
-            "target": "chrome",
-            "query": None
-        }
+    close_words = [
+    "close",
+    "exit",
+    "quit"
+     ]
+
+    if any(word in command for word in close_words):
+        for app_name, aliases in apps.items():
+            for alias in aliases:
+                if alias in command:
+                    return {
+                    "intent": "CLOSE_APP",
+                    "target": app_name,
+                    "query": None
+                    }
 
     # ==========================================
     # LOCK COMPUTER
