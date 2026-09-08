@@ -315,15 +315,35 @@ def detect_intent(command):
     # WINDOW CONTROL
     # ==========================================
 
-    if "minimize" in command:
+    if any(
+    phrase in command
+    for phrase in [
+        "minimize",
+        "minimise",
+        "minimize window",
+        "minimise window",
+        "minimize this",
+        "minimise this"
+     ]
+    ):
 
-        return {
-            "intent": "MINIMIZE",
-            "target": None,
-            "query": None
-        }
+         return {
+        "intent": "MINIMIZE",
+        "target": None,
+        "query": None
+         }
 
-    if "maximize" in command:
+    if any(
+        phrase in command
+        for phrase in [
+            "maximize",
+            "maximise",
+            "maximize window",
+            "maximise window",
+            "maximize this",
+            "maximise this"
+        ]
+    ):
 
         return {
             "intent": "MAXIMIZE",
@@ -389,6 +409,31 @@ def detect_intent(command):
             "query": None
         }
 
+# ==========================================
+# SHUTDOWN
+# ==========================================
+
+    if any(
+    phrase in command
+    for phrase in [
+        "shutdown computer",
+        "shut down computer",
+        "shutdown my computer",
+        "shut down my computer",
+        "shutdown pc",
+        "shut down pc",
+        "turn off computer",
+        "turn off my computer",
+        "turn off pc"
+    ]
+    ):
+
+        return {
+        "intent": "SHUTDOWN",
+        "target": None,
+        "query": None
+        }
+    
     # ==========================================
     # CANCEL SHUTDOWN
     # ==========================================

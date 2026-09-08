@@ -6,7 +6,18 @@ from intents import detect_intent
 from actions import *
 from app_manager import open_app, close_app
 from voice import speak
-
+from system_control import (
+    increase_volume,
+    decrease_volume,
+    mute_volume,
+    minimize_window,
+    maximize_window,
+    lock_computer,
+    restart_computer,
+    shutdown_computer,
+    cancel_shutdown,
+    take_screenshot
+)
 
 def process_command(command):
 
@@ -109,7 +120,7 @@ def process_command(command):
     # WINDOW
     # ==========================================
 
-    elif intent == "MINIMIZE"  | intent == "MINIMISE":
+    elif intent == "MINIMIZE" :
         minimize_window()
 
     elif intent == "MAXIMIZE":
@@ -127,19 +138,58 @@ def process_command(command):
     # SYSTEM
     # ==========================================
 
+   # ==========================================
+# SYSTEM CONTROL
+# ==========================================
+
+    elif intent == "VOLUME_UP":
+
+     increase_volume()
+
+
+    elif intent == "VOLUME_DOWN":
+
+        decrease_volume()
+
+
+    elif intent == "MUTE":
+
+        mute_volume()
+
+
+    elif intent == "MINIMIZE":
+
+        minimize_window()
+
+
+    elif intent == "MAXIMIZE":
+
+        maximize_window()
+
+
+    elif intent == "SCREENSHOT":
+
+        take_screenshot()
+
+
     elif intent == "LOCK":
+
         lock_computer()
+
 
     elif intent == "RESTART":
 
-        speak(
-            "Restarting your computer in ten seconds."
-        )
+         restart_computer()
 
-        restart_computer()
+
+    elif intent == "SHUTDOWN":
+
+     shutdown_computer()
+
 
     elif intent == "CANCEL_SHUTDOWN":
-        cancel_shutdown()
+
+     cancel_shutdown()
 
     # ==========================================
     # TYPE
