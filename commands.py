@@ -6,6 +6,12 @@ from intents import detect_intent
 from actions import *
 from app_manager import open_app, close_app
 from voice import speak
+from memory import (
+    update_memory,
+    get_memory,
+    show_memory,
+    clear_memory
+)
 from system_control import (
     increase_volume,
     decrease_volume,
@@ -27,17 +33,89 @@ def process_command(command):
     target = result["target"]
     query = result["query"]
 
+    # ======================================
+    # SAVE ONLY REAL ACTIONS
+    # ======================================
+
+    memory_intents = [
+        "OPEN_APP",
+        "CLOSE_APP",
+        "OPEN_WEBSITE",
+        "GOOGLE_SEARCH",
+        "YOUTUBE_SEARCH",
+        "OPEN_FOLDER",
+        "TIME",
+        "DATE",
+        "SCREENSHOT",
+        "VOLUME_UP",
+        "VOLUME_DOWN",
+        "MUTE",
+        "MINIMIZE",
+        "MAXIMIZE",
+        "LOCK",
+        "RESTART",
+        "SHUTDOWN",
+        "CANCEL_SHUTDOWN",
+        "TYPE"
+    ]
+
+    if intent in memory_intents:
+
+        update_memory(
+            command=command,
+            intent=intent,
+            target=target,
+            query=query
+        )
+
+    # ======================================
+    # DEBUG INFORMATION
+    # ======================================
+
     print(f"Intent: {intent}")
     print(f"Target: {target}")
     print(f"Query: {query}")
 
     # ==========================================
+    # CONVERSATION
+    # ==========================================
+
+    if intent == "GREETING":
+
+        speak("Hello! How can I help you?")
+
+    elif intent == "HOW_ARE_YOU":
+
+        speak("I'm doing great. Ready to help.")
+
+    elif intent == "THANKS":
+
+        speak("You're welcome.")
+
+    elif intent == "CAPABILITIES":
+
+        speak(
+            "I can open and close applications, "
+            "search Google and YouTube, control "
+            "your computer, manage volume, take "
+            "screenshots, and much more."
+        )
+
+    # ==========================================
     # OPEN APPLICATION
     # ==========================================
 
-    if intent == "OPEN_APP":
+    elif intent == "OPEN_APP":
 
         open_app(target)
+
+    # ==========================================
+    # CLOSE APPLICATION
+    # ==========================================
+
+    elif intent == "CLOSE_APP":
+
+        close_app(target)
 
     # ==========================================
     # WEBSITE
@@ -46,9 +124,11 @@ def process_command(command):
     elif intent == "OPEN_WEBSITE":
 
         if target == "youtube":
+
             open_youtube()
 
         elif target == "google":
+
             open_google()
 
     # ==========================================
@@ -74,12 +154,15 @@ def process_command(command):
     elif intent == "OPEN_FOLDER":
 
         if target == "downloads":
+
             open_downloads()
 
         elif target == "documents":
+
             open_documents()
 
         elif target == "desktop":
+
             open_desktop()
 
     # ==========================================
@@ -87,6 +170,7 @@ def process_command(command):
     # ==========================================
 
     elif intent == "TIME":
+
         tell_time()
 
     # ==========================================
@@ -94,6 +178,7 @@ def process_command(command):
     # ==========================================
 
     elif intent == "DATE":
+
         tell_date()
 
     # ==========================================
@@ -101,6 +186,7 @@ def process_command(command):
     # ==========================================
 
     elif intent == "SCREENSHOT":
+
         take_screenshot()
 
     # ==========================================
@@ -108,97 +194,201 @@ def process_command(command):
     # ==========================================
 
     elif intent == "VOLUME_UP":
+
         increase_volume()
 
     elif intent == "VOLUME_DOWN":
-        decrease_volume()
-
-    elif intent == "MUTE":
-        mute_volume()
-
-    # ==========================================
-    # WINDOW
-    # ==========================================
-
-    elif intent == "MINIMIZE" :
-        minimize_window()
-
-    elif intent == "MAXIMIZE":
-        maximize_window()
-
-    # ==========================================
-    # CHROME
-    # ==========================================
-
-    elif intent == "CLOSE_APP":
-
-        close_app(target)
-
-    # ==========================================
-    # SYSTEM
-    # ==========================================
-
-   # ==========================================
-# SYSTEM CONTROL
-# ==========================================
-
-    elif intent == "VOLUME_UP":
-
-     increase_volume()
-
-
-    elif intent == "VOLUME_DOWN":
 
         decrease_volume()
-
 
     elif intent == "MUTE":
 
         mute_volume()
 
+    # ==========================================
+    # WINDOW CONTROL
+    # ==========================================
 
     elif intent == "MINIMIZE":
 
         minimize_window()
 
-
     elif intent == "MAXIMIZE":
 
         maximize_window()
 
-
-    elif intent == "SCREENSHOT":
-
-        take_screenshot()
-
+    # ==========================================
+    # SYSTEM CONTROL
+    # ==========================================
 
     elif intent == "LOCK":
 
         lock_computer()
 
-
     elif intent == "RESTART":
 
-         restart_computer()
-
+        restart_computer()
 
     elif intent == "SHUTDOWN":
 
-     shutdown_computer()
-
+        shutdown_computer()
 
     elif intent == "CANCEL_SHUTDOWN":
 
-     cancel_shutdown()
+        cancel_shutdown()
 
     # ==========================================
-    # TYPE
+    # MEMORY
+    # ==========================================
+
+    elif intent == "SHOW_MEMORY":
+
+        show_memory()
+
+        speak(
+            "I displayed what I currently remember."
+        )
+
+    elif intent == "CLEAR_MEMORY":
+
+        clear_memory()
+
+        speak(
+            "My memory has been cleared."
+        )
+
+    elif intent == "LAST_COMMAND":
+
+        last_command = get_memory("last_command")
+
+        if last_command:
+
+            speak(
+                f"Your last command was {last_command}."
+            )
+
+            print(
+                f"Last command: {last_command}"
+            )
+
+        else:
+
+            speak(
+                "I don't remember your previous command."
+            )
+
+    elif intent == "LAST_ACTION":
+
+        last_intent = get_memory("last_intent")
+        last_target = get_memory("last_target")
+
+        if last_intent:
+
+            if last_target:
+
+                speak(
+                    f"My last action was {last_intent.replace('_', ' ').lower()} "
+                    f"{last_target}."
+                )
+
+            else:
+
+                speak(
+                    f"My last action was "
+                    f"{last_intent.replace('_', ' ').lower()}."
+                )
+
+        else:
+
+            speak(
+                "I don't remember my previous action."
+            )
+
+    # ==========================================
+    # CONTEXT COMMANDS
+    # ==========================================
+
+    elif intent == "REOPEN_LAST_APP":
+
+        last_app = get_memory("last_app")
+
+        if last_app:
+
+            speak(
+                f"Opening {last_app} again."
+            )
+
+            open_app(last_app)
+
+        else:
+
+            speak(
+                "I don't remember the last application."
+            )
+
+    elif intent == "REPEAT_LAST":
+
+        last_command = get_memory("last_command")
+
+        if last_command:
+
+            # Prevent infinite recursion
+            if last_command.lower().strip() == command.lower().strip():
+
+                speak(
+                    "I can't repeat that command because "
+                    "it would create a loop."
+                )
+
+            else:
+
+                speak(
+                    "Repeating the last command."
+                )
+
+                process_command(last_command)
+
+        else:
+
+            speak(
+                "I don't have a previous command to repeat."
+            )
+
+    elif intent == "SIMILAR_SEARCH":
+
+        last_query = get_memory("last_query")
+
+        if last_query:
+
+            new_query = f"similar to {last_query}"
+
+            speak(
+                f"Searching for something similar to {last_query}."
+            )
+
+            google_search(new_query)
+
+        else:
+
+            speak(
+                "I don't have a previous search."
+            )
+
+    # ==========================================
+    # TYPE TEXT
     # ==========================================
 
     elif intent == "TYPE":
 
         if query:
+
             type_text(query)
+
+        else:
+
+            speak(
+                "What would you like me to type?"
+            )
 
     # ==========================================
     # EXIT
@@ -207,6 +397,7 @@ def process_command(command):
     elif intent == "EXIT":
 
         speak("Goodbye.")
+
         return False
 
     # ==========================================
@@ -224,3 +415,4 @@ def process_command(command):
         )
 
     return True
+

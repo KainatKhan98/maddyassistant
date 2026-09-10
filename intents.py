@@ -3,6 +3,9 @@
 # ==========================================
 
 import re
+from difflib import get_close_matches
+
+from app_manager import discover_apps
 
 
 def normalize_text(text):
@@ -43,70 +46,182 @@ def detect_intent(command):
 
     command = normalize_text(command)
 
-# ==========================================
-# CONVERSATION COMMANDS
-# ==========================================
-
-    if any(
-    phrase in command
-    for phrase in [
-        "hello",
-        "hi",
-        "hey"
-        ]
-    ):
-
-        return {
-        "intent": "GREETING",
-        "target": None,
-        "query": None
-     }
-
+    # ==========================================
+    # CONVERSATION COMMANDS
+    # ==========================================
 
     if any(
         phrase in command
         for phrase in [
-        "how are you",
-        "how are you doing"
+            "hello",
+            "hi",
+            "hey"
         ]
     ):
 
         return {
-        "intent": "HOW_ARE_YOU",
-        "target": None,
-        "query": None
+            "intent": "GREETING",
+            "target": None,
+            "query": None
         }
-
 
     if any(
         phrase in command
-    for phrase in [
-        "thank you",
-        "thanks",
-        "thank maddy"
+        for phrase in [
+            "how are you",
+            "how are you doing"
         ]
     ):
 
         return {
-        "intent": "THANKS",
-        "target": None,
-        "query": None
+            "intent": "HOW_ARE_YOU",
+            "target": None,
+            "query": None
         }
-
 
     if any(
         phrase in command
-    for phrase in [
-        "what can you do",
-        "what can you do for me",
-        "what are your capabilities"
+        for phrase in [
+            "thank you",
+            "thanks",
+            "thank maddy"
         ]
     ):
 
-     return {
-        "intent": "CAPABILITIES",
-        "target": None,
-        "query": None
+        return {
+            "intent": "THANKS",
+            "target": None,
+            "query": None
+        }
+
+    if any(
+        phrase in command
+        for phrase in [
+            "what can you do",
+            "what can you do for me",
+            "what are your capabilities"
+        ]
+    ):
+
+        return {
+            "intent": "CAPABILITIES",
+            "target": None,
+            "query": None
+        }
+
+    # ==========================================
+    # MEMORY COMMANDS
+    # ==========================================
+
+    if any(
+        phrase in command
+        for phrase in [
+            "what was my last command",
+            "what was the last command",
+            "what did i ask you",
+            "what did i just ask"
+        ]
+    ):
+
+        return {
+            "intent": "LAST_COMMAND",
+            "target": None,
+            "query": None
+        }
+
+    if any(
+        phrase in command
+        for phrase in [
+            "what did you do",
+            "what was the last thing you did",
+            "what was your last action"
+        ]
+    ):
+
+        return {
+            "intent": "LAST_ACTION",
+            "target": None,
+            "query": None
+        }
+
+    if any(
+        phrase in command
+        for phrase in [
+            "show memory",
+            "show your memory",
+            "what do you remember"
+        ]
+    ):
+
+        return {
+            "intent": "SHOW_MEMORY",
+            "target": None,
+            "query": None
+        }
+
+    if any(
+        phrase in command
+        for phrase in [
+            "clear memory",
+            "forget everything",
+            "forget what you remember"
+        ]
+    ):
+
+        return {
+            "intent": "CLEAR_MEMORY",
+            "target": None,
+            "query": None
+        }
+
+    # ==========================================
+    # CONTEXT COMMANDS
+    # ==========================================
+
+    if any(
+        phrase in command
+        for phrase in [
+            "repeat that",
+            "do that again",
+            "repeat the last command"
+        ]
+    ):
+
+        return {
+            "intent": "REPEAT_LAST",
+            "target": None,
+            "query": None
+        }
+
+    if any(
+        phrase in command
+        for phrase in [
+            "open it again",
+            "open that again",
+            "open the last app",
+            "open last app"
+        ]
+    ):
+
+        return {
+            "intent": "REOPEN_LAST_APP",
+            "target": None,
+            "query": None
+        }
+
+    if any(
+        phrase in command
+        for phrase in [
+            "search for something similar",
+            "search something similar",
+            "similar search"
+        ]
+    ):
+
+        return {
+            "intent": "SIMILAR_SEARCH",
+            "target": None,
+            "query": None
         }
 
     # ==========================================
@@ -122,6 +237,7 @@ def detect_intent(command):
         "close yourself",
         "shutdown maddy"
     ]:
+
         return {
             "intent": "EXIT",
             "target": None,
@@ -132,32 +248,6 @@ def detect_intent(command):
     # OPEN APPLICATION
     # ==========================================
 
-    apps = {
-        "chrome": [
-            "chrome",
-            "google chrome",
-            "browser",
-            "web browser"
-        ],
-
-        "vscode": [
-            "vscode",
-            "vs code",
-            "visual studio code",
-            "code editor"
-        ],
-
-        "notepad": [
-            "notepad",
-            "text editor"
-        ],
-
-        "calculator": [
-            "calculator",
-            "calc"
-        ]
-    }
-
     open_words = [
         "open",
         "launch",
@@ -165,25 +255,110 @@ def detect_intent(command):
         "run"
     ]
 
-    if any(word in command for word in open_words):
+    if any(
+        command.startswith(word + " ")
+        for word in open_words
+    ):
 
-        for app_name, aliases in apps.items():
+        app_name = command
 
-            for alias in aliases:
+        # Remove opening command
+        for word in open_words:
 
-                if alias in command:
+            if app_name.startswith(word + " "):
 
-                    return {
-                        "intent": "OPEN_APP",
-                        "target": app_name,
-                        "query": None
-                    }
+                app_name = app_name[len(word):].strip()
+
+                break
+
+        # --------------------------------------
+        # Discover installed applications
+        # --------------------------------------
+
+        discovered_apps = discover_apps()
+
+        # --------------------------------------
+        # Exact match
+        # --------------------------------------
+
+        if app_name in discovered_apps:
+
+            return {
+                "intent": "OPEN_APP",
+                "target": app_name,
+                "query": None
+            }
+
+        # --------------------------------------
+        # Partial match
+        # --------------------------------------
+
+        for name in discovered_apps:
+
+            if app_name in name or name in app_name:
+
+                return {
+                    "intent": "OPEN_APP",
+                    "target": name,
+                    "query": None
+                }
+
+        # --------------------------------------
+        # Fuzzy / typo matching
+        # --------------------------------------
+
+        matches = get_close_matches(
+            app_name,
+            discovered_apps.keys(),
+            n=1,
+            cutoff=0.65
+        )
+
+        if matches:
+
+            matched_name = matches[0]
+
+            print(
+                f"Fuzzy match: '{app_name}' -> '{matched_name}'"
+            )
+
+            return {
+                "intent": "OPEN_APP",
+                "target": matched_name,
+                "query": None
+            }
+
+        # --------------------------------------
+        # Known aliases
+        # --------------------------------------
+
+        aliases = {
+            "chrome": "google chrome",
+            "google chrome": "google chrome",
+
+            "vscode": "visual studio code",
+            "vs code": "visual studio code",
+            "visual studio code": "visual studio code",
+
+            "notepad": "notepad",
+
+            "calculator": "calculator"
+        }
+
+        if app_name in aliases:
+
+            return {
+                "intent": "OPEN_APP",
+                "target": aliases[app_name],
+                "query": None
+            }
 
     # ==========================================
     # OPEN WEBSITES
     # ==========================================
 
     if "open youtube" in command:
+
         return {
             "intent": "OPEN_WEBSITE",
             "target": "youtube",
@@ -191,6 +366,7 @@ def detect_intent(command):
         }
 
     if "open google" in command:
+
         return {
             "intent": "OPEN_WEBSITE",
             "target": "google",
@@ -247,6 +423,7 @@ def detect_intent(command):
     # ==========================================
 
     if "open downloads" in command:
+
         return {
             "intent": "OPEN_FOLDER",
             "target": "downloads",
@@ -254,6 +431,7 @@ def detect_intent(command):
         }
 
     if "open documents" in command:
+
         return {
             "intent": "OPEN_FOLDER",
             "target": "documents",
@@ -261,6 +439,7 @@ def detect_intent(command):
         }
 
     if "open desktop" in command:
+
         return {
             "intent": "OPEN_FOLDER",
             "target": "desktop",
@@ -280,6 +459,7 @@ def detect_intent(command):
             "time"
         ]
     ):
+
         return {
             "intent": "TIME",
             "target": None,
@@ -301,6 +481,7 @@ def detect_intent(command):
             "current date"
         ]
     ):
+
         return {
             "intent": "DATE",
             "target": None,
@@ -321,6 +502,7 @@ def detect_intent(command):
             "capture my screen"
         ]
     ):
+
         return {
             "intent": "SCREENSHOT",
             "target": None,
@@ -340,6 +522,7 @@ def detect_intent(command):
             "make volume louder"
         ]
     ):
+
         return {
             "intent": "VOLUME_UP",
             "target": None,
@@ -359,6 +542,7 @@ def detect_intent(command):
             "make volume lower"
         ]
     ):
+
         return {
             "intent": "VOLUME_DOWN",
             "target": None,
@@ -382,22 +566,22 @@ def detect_intent(command):
     # ==========================================
 
     if any(
-    phrase in command
-    for phrase in [
-        "minimize",
-        "minimise",
-        "minimize window",
-        "minimise window",
-        "minimize this",
-        "minimise this"
-     ]
+        phrase in command
+        for phrase in [
+            "minimize",
+            "minimise",
+            "minimize window",
+            "minimise window",
+            "minimize this",
+            "minimise this"
+        ]
     ):
 
-         return {
-        "intent": "MINIMIZE",
-        "target": None,
-        "query": None
-         }
+        return {
+            "intent": "MINIMIZE",
+            "target": None,
+            "query": None
+        }
 
     if any(
         phrase in command
@@ -418,24 +602,83 @@ def detect_intent(command):
         }
 
     # ==========================================
-    # CLOSE CHROME
+    # CLOSE APPLICATION
     # ==========================================
 
     close_words = [
-    "close",
-    "exit",
-    "quit"
-     ]
+        "close",
+        "exit",
+        "quit"
+    ]
 
-    if any(word in command for word in close_words):
-        for app_name, aliases in apps.items():
-            for alias in aliases:
-                if alias in command:
-                    return {
+    if any(
+        command.startswith(word + " ")
+        for word in close_words
+    ):
+
+        app_name = command
+
+        # Remove closing command
+        for word in close_words:
+
+            if app_name.startswith(word + " "):
+
+                app_name = app_name[len(word):].strip()
+
+                break
+
+        discovered_apps = discover_apps()
+
+        # --------------------------------------
+        # Exact match
+        # --------------------------------------
+
+        if app_name in discovered_apps:
+
+            return {
+                "intent": "CLOSE_APP",
+                "target": app_name,
+                "query": None
+            }
+
+        # --------------------------------------
+        # Partial match
+        # --------------------------------------
+
+        for name in discovered_apps:
+
+            if app_name in name or name in app_name:
+
+                return {
                     "intent": "CLOSE_APP",
-                    "target": app_name,
+                    "target": name,
                     "query": None
-                    }
+                }
+
+        # --------------------------------------
+        # Fuzzy match
+        # --------------------------------------
+
+        matches = get_close_matches(
+            app_name,
+            discovered_apps.keys(),
+            n=1,
+            cutoff=0.65
+        )
+
+        if matches:
+
+            matched_name = matches[0]
+
+            print(
+                f"Fuzzy match: '{app_name}' -> '{matched_name}'"
+            )
+
+            return {
+                "intent": "CLOSE_APP",
+                "target": matched_name,
+                "query": None
+            }
 
     # ==========================================
     # LOCK COMPUTER
@@ -450,6 +693,7 @@ def detect_intent(command):
             "lock my pc"
         ]
     ):
+
         return {
             "intent": "LOCK",
             "target": None,
@@ -469,37 +713,38 @@ def detect_intent(command):
             "restart my pc"
         ]
     ):
+
         return {
             "intent": "RESTART",
             "target": None,
             "query": None
         }
 
-# ==========================================
-# SHUTDOWN
-# ==========================================
+    # ==========================================
+    # SHUTDOWN
+    # ==========================================
 
     if any(
-    phrase in command
-    for phrase in [
-        "shutdown computer",
-        "shut down computer",
-        "shutdown my computer",
-        "shut down my computer",
-        "shutdown pc",
-        "shut down pc",
-        "turn off computer",
-        "turn off my computer",
-        "turn off pc"
-    ]
+        phrase in command
+        for phrase in [
+            "shutdown computer",
+            "shut down computer",
+            "shutdown my computer",
+            "shut down my computer",
+            "shutdown pc",
+            "shut down pc",
+            "turn off computer",
+            "turn off my computer",
+            "turn off pc"
+        ]
     ):
 
         return {
-        "intent": "SHUTDOWN",
-        "target": None,
-        "query": None
+            "intent": "SHUTDOWN",
+            "target": None,
+            "query": None
         }
-    
+
     # ==========================================
     # CANCEL SHUTDOWN
     # ==========================================
